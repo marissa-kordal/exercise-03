@@ -1,0 +1,76 @@
+---
+title: "EDA-challenge"
+date: 02-06-26
+format: html
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+
+```{r}
+d<- read.csv("data-wrangling.csv") ##read in the dataset data-wrangling 
+
+library(tidyverse) ##load the packages we will need 
+library(dplyr)
+
+names(d) #look at the different variables included in the data set
+
+```
+```{r}
+#Step 1
+
+#1. create a new variable named BSD(body size dimorphism) which is the ratio of average male to female body mass. 
+
+ 
+
+bsd<- d%>%
+  mutate(BSD = Body_mass_male_mean/Body_mass_female_mean)##adding a new column with mutate called BSD and specifing that the data should be the ratio of average male to female body mass. 
+
+#2. Create a new variable named sex_ratio, which is the ratio of the number of adult females to adult males in a typical group.
+
+sr<- bsd%>%
+  mutate(sex_ratio = AdultFemale/AdultMales) #creating a new column with mutate called sex_ratio. ratio is derived by taking the number of adult females divided by adult males
+
+#3. Create a new variable named DI (for “defensibility index”), which is the ratio of day range length to the diameter of the home range.
+
+di<- sr%>%
+  mutate(hr_diameter = 2*(sqrt(HomeRange_km2/pi)))%>%
+  mutate(DI = DayLength_km/hr_diameter)
+
+head(di)
+
+#4. Plot the relationship between day range length (y axis) and time spent moving (x axis), for these primate species overall and by family 
+
+library(ggplot2)
+
+plot1<-ggplot()+ 
+  geom_point(data = di, aes(x= Move, y = DayLength_km, color = factor(Family)), na.rm = TRUE)+
+  theme_classic()
+#using ggplot, specifying the data in geom_point and plotting the time spent moving on the x axis and the day range length on the Y axis. Coloring the points by family by using factor and taking out the NAs using na.rm
+
+plot2<- ggplot()+ 
+  geom_point(data = di, aes(x= Move, y = DayLength_km, color = factor(Family)), na.rm = TRUE)+
+  theme_classic()+
+  facet_wrap("Family")
+#same as plot1 but used facet wrap to make a plot for each family group.
+
+#Overall, there is not a trend that species who spend more time moving travel further overall. Within families, there is also no trend that species spend more time moving travel further. No you should not transform the data because they are on similar scales. 
+
+#5. Plot the relationship between day range length (y axis) and group size (x axis), overall and by family.
+
+
+plot3<-ggplot(data = di, aes(x= as.numeric(MeanGroupSize), y = DayLength_km), na.rm = TRUE)+ 
+  geom_point(aes(color = factor(Family)))+
+  theme_classic()+
+  geom_smooth(method = "lm")
+
+plot4<-ggplot(data = di, aes(x= as.numeric(MeanGroupSize), y = DayLength_km), na.rm = TRUE)+ 
+  geom_point(aes(color = factor(Family)))+
+  theme_classic()+
+  geom_smooth(method = "lm")+
+  facet_wrap("Family")
+
+#yes species that live in groups travel further overall in a day. Many of the species within groups also exhibit this trend as well. Cercopithecidae does as well as Pitheciidae. 
+```
