@@ -73,4 +73,47 @@ plot4<-ggplot(data = di, aes(x= as.numeric(MeanGroupSize), y = DayLength_km), na
   facet_wrap("Family")
 
 #yes species that live in groups travel further overall in a day. Many of the species within groups also exhibit this trend as well. Cercopithecidae does as well as Pitheciidae. 
+
+#6. Plot the relationship between canine size dimorphism (y axis) and body size dimorphism (x axis) overall and by family.
+
+names(di)
+
+plot5<-ggplot(data = di, aes(x= BSD, y = Canine_Dimorphism), na.rm = TRUE)+ 
+  geom_point(aes(color = factor(Family)))+
+  theme_classic()+
+  geom_smooth(method = "lm")
+
+plot6<- ggplot(data = di, aes(x=BSD, y= Canine_Dimorphism), na.rm = TRUE)+
+  geom_point(aes(color = factor(Family)))+
+  theme_classic()+
+  geom_smooth(method = "lm")+
+  facet_wrap("Family")
+
+##Some taxa with greater size dimorphism also show greater canine dimorphism such as cebidae and cercopithecidae but other taxa actually show smaller canine dimorphism with greater body dimorphism such as Atelidae and Lemuridae. 
+
+#7. Create a new variable named diet_strategy that is “frugivore” if fruits make up >50% of the diet, “folivore” if leaves make up >50% of the diet, and “omnivore” if diet data are available but neither of these is true (i.e., these values are not NA).
+
+ds<-di%>%
+  mutate(diet_strategy = case_when(Fruit > 50 ~ "frugivore", Leaves > 50 ~ "folivore", is.na(Fruit) ~ "NA", TRUE ~ "omnivore", is.na(Leaves) ~ "NA"))%>%
+  drop_na()
+
+##using mutate to make a new column, then using case_when to dictacte what populates that column and then dropping NAs from the category 
+
+#Then, create boxplots of group size for species with different dietary strategies, omitting the category NA from your plot.
+names(ds)
+plot7<- ggplot(data = ds, aes(x=diet_strategy, y=MeanGroupSize))+
+  geom_boxplot()+
+  theme_classic()
+#plotting the diet strategey on the x axis and mean group size on the y axis 
+##yes frugivores live in larger groups than folivores 
+
+#8. In one line of code, using {dplyr} verbs and the forward pipe (|> or %>%) operator, do the following:
+
+df<-ds%>%
+  mutate(Binomial = paste0(Genus, " ", Species))%>% #making a new column named Binomial name with the genus and species name
+  select(Binomial, Family, Brain_Size_Species_Mean, Body_mass_male_mean)%>% #selecting only the columns I want to work with
+  group_by(Family)%>% #and grouping them by family
+  summarize(avg_brain_size = mean(Brain_Size_Species_Mean, na.rm = TRUE), avg_male_mass = mean(Body_mass_male_mean, na.rm = TRUE))%>%
+  arrange(avg_brain_size)## using summarize to calculate and create columns for average brain size and average male mass and then arranging them in increasing average brian size. 
+print(df)
 ```
